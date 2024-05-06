@@ -1,0 +1,50 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: lynks
+    network: zklink-nova
+    source:
+      address: "0xd6d05CBdb8A70d3839166926f1b14d74d9953A08"
+      abi: lynks
+      startBlock: 78522
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Transfer
+      abis:
+        - name: lynks
+          file: ./abis/lynks.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/lynks.ts
+
+  - kind: ethereum
+    name: trademark
+    network: zklink-nova
+    source:
+      address: "0xDeEDf09C48E1284b59f8e7DC4e1fd45243002615"
+      abi: trademark
+      startBlock: 78518
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: trademark
+          file: ./abis/trademark.json
+      eventHandlers:
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+      file: ./src/trademark.ts
