@@ -5,7 +5,8 @@ import {
   Transfer,
   LynksBalance
 } from "../generated/schema"
-import { BigInt } from '@graphprotocol/graph-ts'
+import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
+
 export function handleTransfer(event: TransferEvent): void {
   let entity = new Transfer(
     event.transaction.hash.concatI32(event.logIndex.toI32())
@@ -17,25 +18,29 @@ export function handleTransfer(event: TransferEvent): void {
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
-
-  entity.save()
-
-  let fromBalance = LynksBalance.load(event.params.from)
-  if(fromBalance === null) {
-    fromBalance = new LynksBalance(event.params.from)
-    fromBalance.address = event.params.from;
-    fromBalance.balance = new BigInt(0);
-  }
-  fromBalance.balance  = fromBalance.balance.minus(new BigInt(1));
+  
+  let fromBalance = loadLynksBalance(event.params.from)
+  fromBalance.balance  = fromBalance.balance.minus(BigInt.fromI32(1));
   fromBalance.save();
 
-  let toBalance = LynksBalance.load(event.params.to)
-  if(toBalance === null) {
-    toBalance = new LynksBalance(event.params.to)
-    toBalance.address = event.params.to;
-    toBalance.balance = new BigInt(0);
-  }
-  toBalance.balance = toBalance.balance.plus(new BigInt(1));
+  let toBalance = loadLynksBalance(event.params.to)
+  toBalance.balance = toBalance.balance.plus(BigInt.fromI32(1));
   toBalance.save();
-  
+
+  entity.save()
+}
+
+export function loadLynksBalance(address: Bytes): LynksBalance {
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(address)
+  );
+  let lynksBalance = LynksBalance.load(id);
+  if (!lynksBalance) {
+    lynksBalance = new LynksBalance(id);
+    lynksBalance.address = address;
+    lynksBalance.balance = BigInt.fromI32(0);
+    lynksBalance.save();
+  }
+  return lynksBalance;
+
 }

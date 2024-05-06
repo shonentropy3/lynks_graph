@@ -20,6 +20,19 @@ type TransferBatch @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type LynksBalance @entity {
+  id: Bytes!
+  address: Bytes!
+  balance: BigInt!
+}
+
+type TrademarkBalance @entity {
+  id: Bytes! # address + trademark_id
+  address: Bytes!
+  balance: BigInt!
+  trademark_id: BigInt! # uint256
+}
+
 type TransferSingle @entity(immutable: true) {
   id: Bytes!
   operator: Bytes! # address
@@ -30,17 +43,4 @@ type TransferSingle @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
-}
-
-type LynksBalance @entity(immutable: true) {
-  id: Bytes!
-  address: Bytes!
-  balance: BigInt!
-}
-
-type TrademarkBalance @entity(immutable: true) {
-  id: Bytes! # address + trademark_id
-  address: Bytes!
-  balance: BigInt!
-  trademark_id: BigInt! # uint256
 }
