@@ -3,7 +3,9 @@ import {
 } from "../generated/lynks/lynks"
 import {
   Transfer,
-  LynksBalance
+  LynksBalance,
+  TransferMint,
+  TransferBuy
 } from "../generated/schema"
 import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
 
@@ -27,6 +29,36 @@ export function handleTransfer(event: TransferEvent): void {
   toBalance.balance = toBalance.balance.plus(BigInt.fromI32(1));
   toBalance.save();
 
+  let transferMint = new TransferMint(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+//0x128adCD896f1982862dA3cE5977BD5152447cb02
+  if(entity.from == Bytes.fromHexString("0x0000000000000000000000000000000000000000")){
+  transferMint.from = event.params.from
+  transferMint.to = event.params.to
+  transferMint.tokenId = event.params.tokenId
+
+  transferMint.blockNumber = event.block.number
+  transferMint.blockTimestamp = event.block.timestamp
+  transferMint.transactionHash = event.transaction.hash
+  }
+
+  let transferBuy = new TransferBuy(
+    event.transaction.hash.concatI32(event.logIndex.toI32())
+  )
+//0x128adCD896f1982862dA3cE5977BD5152447cb02
+  if(entity.from == Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02")){
+  transferBuy.from = event.params.from
+  transferBuy.to = event.params.to
+  transferBuy.tokenId = event.params.tokenId
+
+  transferBuy.blockNumber = event.block.number
+  transferBuy.blockTimestamp = event.block.timestamp
+  transferBuy.transactionHash = event.transaction.hash
+  }
+
+  transferMint.save()
+  transferBuy.save()
   entity.save()
 }
 
