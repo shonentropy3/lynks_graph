@@ -17,6 +17,7 @@ dataSources:
       language: wasm/assemblyscript
       entities:
         - Transfer
+        - LinksBalance
       abis:
         - name: lynks
           file: ./abis/lynks.json
@@ -39,6 +40,7 @@ dataSources:
       entities:
         - TransferBatch
         - TransferSingle
+        - TrademarkBalance
       abis:
         - name: trademark
           file: ./abis/trademark.json
