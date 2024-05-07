@@ -76,11 +76,17 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.address = event.params.to;
     lynksAmount.save();
   } else {
-    let lynksAmount = loadLynksAmount(event.params.to);
-    lynksAmount.transferAmount = lynksAmount.transferAmount.plus(
+    let lynksAmount1 = loadLynksAmount(event.params.to);
+    lynksAmount1.transferAmountIn = lynksAmount1.transferAmountIn.plus(
       BigInt.fromI32(1)
     );
-    lynksAmount.save();
+    lynksAmount1.save();
+
+    let lynksAmount2 = loadLynksAmount(event.params.from);
+    lynksAmount2.transferAmountOut = lynksAmount2.transferAmountOut.plus(
+      BigInt.fromI32(1)
+    );
+    lynksAmount2.save();
   }
   entity.save();
 }
@@ -103,7 +109,8 @@ export function loadLynksAmount(address: Bytes): LynksAmount {
   if (!lynksAmount) {
     lynksAmount = new LynksAmount(id);
     lynksAmount.address = address;
-    lynksAmount.transferAmount = BigInt.fromI32(0);
+    lynksAmount.transferAmountIn = BigInt.fromI32(0);
+    lynksAmount.transferAmountOut = BigInt.fromI32(0);
     lynksAmount.mintAmount = BigInt.fromI32(0);
     lynksAmount.buyAmount = BigInt.fromI32(0);
     lynksAmount.save();

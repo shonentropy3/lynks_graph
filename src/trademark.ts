@@ -91,9 +91,13 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
     for(let i = 0; i < event.params.ids.length; i++) {
       let id = event.params.ids[i]
       let value = event.params.values[i]
-      let trademarkAmount = loadTrademarkAmount(event.params.to, id);
-      trademarkAmount.transferAmount = trademarkAmount.transferAmount.plus(value)
-      trademarkAmount.save()
+      let trademarkAmount1 = loadTrademarkAmount(event.params.to, id);
+      trademarkAmount1.transferAmountIn = trademarkAmount1.transferAmountIn.plus(value)
+      trademarkAmount1.save()
+
+      let trademarkAmount2 = loadTrademarkAmount(event.params.from, id);
+      trademarkAmount2.transferAmountOut = trademarkAmount2.transferAmountOut.plus(value)
+      trademarkAmount2.save()
     }
   }
 
@@ -192,9 +196,13 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
     }
 
     else {
-      let trademarkAmount = loadTrademarkAmount(event.params.to, event.params.id);
-      trademarkAmount.transferAmount = trademarkAmount.transferAmount.plus(event.params.value)
-      trademarkAmount.save()
+      let trademarkAmount1 = loadTrademarkAmount(event.params.to, event.params.id);
+      trademarkAmount1.transferAmountIn = trademarkAmount1.transferAmountIn.plus(event.params.value)
+      trademarkAmount1.save()
+
+      let trademarkAmount2 = loadTrademarkAmount(event.params.from, event.params.id);
+      trademarkAmount2.transferAmountOut = trademarkAmount2.transferAmountIn.plus(event.params.value)
+      trademarkAmount2.save()
     }
 
   let trademarkBalanceFrom = TrademarkBalance.load(event.params.from.concatI32(event.params.id.toI32()))
@@ -226,7 +234,8 @@ export function loadTrademarkAmount(address: Bytes, trademark_id: BigInt): Trade
   if (!trademarkAmount) {
     trademarkAmount = new TrademarkAmount(id);
     trademarkAmount.address = address;
-    trademarkAmount.transferAmount = BigInt.fromI32(0);
+    trademarkAmount.transferAmountIn = BigInt.fromI32(0);
+    trademarkAmount.transferAmountOut = BigInt.fromI32(0);
     trademarkAmount.mintAmount = BigInt.fromI32(0);
     trademarkAmount.buyAmount = BigInt.fromI32(0);
     trademarkAmount.trademark_id = trademark_id;

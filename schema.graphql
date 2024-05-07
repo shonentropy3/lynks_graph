@@ -73,7 +73,8 @@ type LynksBalance @entity {
 type LynksAmount @entity {
   id: Bytes!
   address: Bytes!
-  transferAmount: BigInt!
+  transferAmountIn: BigInt!
+  transferAmountOut: BigInt!
   mintAmount: BigInt!
   buyAmount: BigInt!
 }
@@ -88,7 +89,8 @@ type TrademarkBalance @entity {
 type TrademarkAmount @entity {
   id: Bytes!
   address: Bytes!
-  transferAmount: BigInt!
+  transferAmountIn: BigInt!
+  transferAmountOut: BigInt!
   mintAmount: BigInt!
   buyAmount: BigInt!
   trademark_id: BigInt!
