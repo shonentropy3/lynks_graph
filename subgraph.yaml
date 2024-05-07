@@ -50,3 +50,51 @@ dataSources:
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleTransferSingle
       file: ./src/trademark.ts
+
+  - kind: ethereum
+    name: booster_1
+    network: zklink-nova
+    source:
+      address: "0xE9c53534808388aD8d9A1b8fC5812B5C2185EBfD"
+      abi: trademark
+      startBlock: 78515
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: trademark
+          file: ./abis/trademark.json
+      eventHandlers:
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+      file: ./src/booster-1.ts
+
+  - kind: ethereum
+    name: booster_2
+    network: zklink-nova
+    source:
+      address: "0xe8184919c7200EF09e7007DFaB89BA4a99CeDc98"
+      abi: trademark
+      startBlock: 346878
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - TransferBatch
+        - TransferSingle
+      abis:
+        - name: trademark
+          file: ./abis/trademark.json
+      eventHandlers:
+        - event: TransferBatch(indexed address,indexed address,indexed address,uint256[],uint256[])
+          handler: handleTransferBatch
+        - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
+          handler: handleTransferSingle
+      file: ./src/booster-1.ts

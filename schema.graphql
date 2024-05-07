@@ -131,3 +131,25 @@ type TransferSingleBuy @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+type Boost1Balance @entity {
+  id: Bytes! # address + trademark_id
+  address: Bytes!
+  balance3: BigInt!
+  balance4: BigInt!
+  balance100: BigInt!
+  balance300: BigInt!
+  balance500: BigInt!
+  balance1000: BigInt!
+  balance2000: BigInt!
+}
+
+type Boost2Balance @entity {
+  id: Bytes! # address + trademark_id
+  address: Bytes!
+  balance50: BigInt!
+  balance100: BigInt!
+  balance200: BigInt!
+  balance500: BigInt!
+  balance1000: BigInt!
+}
