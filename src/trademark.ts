@@ -27,11 +27,15 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash
 
-  let transferBatchMint = new TransferBatchMint(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
 //0x128adCD896f1982862dA3cE5977BD5152447cb02
   if(entity.from == Bytes.fromHexString("0x0000000000000000000000000000000000000000")){
+    let transferBatchMint = loadTransferBatchMint(event.params.operator,
+      event.params.to,
+      event.params.ids as BigInt[],
+      event.params.values as BigInt[],
+      event.block.number,
+      event.block.timestamp,
+      event.transaction.hash);
     transferBatchMint.operator = event.params.operator
     transferBatchMint.from = event.params.from
     transferBatchMint.to = event.params.to
@@ -41,26 +45,28 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
     transferBatchMint.blockNumber = event.block.number
     transferBatchMint.blockTimestamp = event.block.timestamp
     transferBatchMint.transactionHash = event.transaction.hash
+    transferBatchMint.save()
   }
 
-  let transferBatchBuy = new TransferBatchBuy(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-//0x128adCD896f1982862dA3cE5977BD5152447cb02
   if(entity.from == Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02")){
-    transferBatchBuy.operator = event.params.operator
-    transferBatchBuy.from = event.params.from
-    transferBatchBuy.to = event.params.to
-    transferBatchBuy.ids = event.params.ids
-    transferBatchBuy.values = event.params.values
+    let transferBatchBuy = loadTransferBatchBuy(event.params.operator,
+      event.params.to,
+      event.params.ids as BigInt[],
+      event.params.values as BigInt[],
+      event.block.number,
+      event.block.timestamp,
+      event.transaction.hash);
+      transferBatchBuy.operator = event.params.operator
+      transferBatchBuy.from = event.params.from
+      transferBatchBuy.to = event.params.to
+      transferBatchBuy.ids = event.params.ids
+      transferBatchBuy.values = event.params.values
   
-    transferBatchBuy.blockNumber = event.block.number
-    transferBatchBuy.blockTimestamp = event.block.timestamp
-    transferBatchBuy.transactionHash = event.transaction.hash
+      transferBatchBuy.blockNumber = event.block.number
+      transferBatchBuy.blockTimestamp = event.block.timestamp
+      transferBatchBuy.transactionHash = event.transaction.hash
+      transferBatchBuy.save()
   }
-
-  transferBatchMint.save()
-  transferBatchBuy.save()
 
   entity.save()
 
@@ -106,12 +112,16 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  let transferSingleMint = new TransferSingleMint(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-//0x128adCD896f1982862dA3cE5977BD5152447cb02
+  
   if(entity.from == Bytes.fromHexString("0x0000000000000000000000000000000000000000")){
+  let transferSingleMint = loadTransferSingleMint(event.params.operator,
+    event.params.from,
+    event.params.to,
+    event.params.id,
+    event.params.value,
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash);
     transferSingleMint.operator = event.params.operator
     transferSingleMint.from = event.params.from
     transferSingleMint.to = event.params.to
@@ -121,26 +131,28 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
     transferSingleMint.blockNumber = event.block.number
     transferSingleMint.blockTimestamp = event.block.timestamp
     transferSingleMint.transactionHash = event.transaction.hash
+    transferSingleMint.save()
   }
-
-  let transferSingleBuy = new TransferSingleBuy(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-//0x128adCD896f1982862dA3cE5977BD5152447cb02
   if(entity.from == Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02")){
-    transferSingleBuy.operator = event.params.operator
-    transferSingleBuy.from = event.params.from
-    transferSingleBuy.to = event.params.to
-    transferSingleBuy.trademark_id = event.params.id
-    transferSingleBuy.value = event.params.value
-
-    transferSingleBuy.blockNumber = event.block.number
-    transferSingleBuy.blockTimestamp = event.block.timestamp
-    transferSingleBuy.transactionHash = event.transaction.hash
-  }
-
-  transferSingleMint.save()
-  transferSingleBuy.save()
+    let transferSingleBuy = loadTransferSingleBuy(event.params.operator,
+      event.params.from,
+      event.params.to,
+      event.params.id,
+      event.params.value,
+      event.block.number,
+      event.block.timestamp,
+      event.transaction.hash);
+      transferSingleBuy.operator = event.params.operator
+      transferSingleBuy.from = event.params.from
+      transferSingleBuy.to = event.params.to
+      transferSingleBuy.trademark_id = event.params.id
+      transferSingleBuy.value = event.params.value
+  
+      transferSingleBuy.blockNumber = event.block.number
+      transferSingleBuy.blockTimestamp = event.block.timestamp
+      transferSingleBuy.transactionHash = event.transaction.hash
+      transferSingleBuy.save()
+    }
 
   let trademarkBalanceFrom = TrademarkBalance.load(event.params.from.concatI32(event.params.id.toI32()))
   if(trademarkBalanceFrom === null) {
@@ -162,3 +174,116 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
   trademarkBalanceTo.balance = trademarkBalanceTo.balance.plus(event.params.value)
   trademarkBalanceTo.save()
 }
+
+export function loadTransferBatchMint(operator: Bytes,
+  to: Bytes,
+  ids: BigInt[],
+  values: BigInt[],
+  blockNumber: BigInt,
+  blockTimestamp: BigInt,
+  transactionHash: Bytes): TransferBatchMint {
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(transactionHash)
+  );
+  let transferBatchMint = TransferBatchMint.load(id);
+  if (!transferBatchMint) {
+    transferBatchMint = new TransferBatchMint(id);
+    transferBatchMint.operator = operator
+    transferBatchMint.to = to
+    transferBatchMint.ids = ids
+    transferBatchMint.values = values
+
+    transferBatchMint.blockNumber = blockNumber
+    transferBatchMint.blockTimestamp = blockTimestamp
+    transferBatchMint.transactionHash = transactionHash
+    transferBatchMint.save();
+  }
+  return transferBatchMint;
+}
+
+export function loadTransferBatchBuy(operator: Bytes,
+  to: Bytes,
+  ids: BigInt[],
+  values: BigInt[],
+  blockNumber: BigInt,
+  blockTimestamp: BigInt,
+  transactionHash: Bytes): TransferBatchBuy {
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(transactionHash)
+  );
+  let transferBatchBuy = TransferBatchBuy.load(id);
+  if (!transferBatchBuy) {
+    transferBatchBuy = new TransferBatchBuy(id);
+    transferBatchBuy.operator = operator
+    transferBatchBuy.to = to
+    transferBatchBuy.ids = ids
+    transferBatchBuy.values = values
+
+    transferBatchBuy.blockNumber = blockNumber
+    transferBatchBuy.blockTimestamp = blockTimestamp
+    transferBatchBuy.transactionHash = transactionHash
+    transferBatchBuy.save();
+  }
+  return transferBatchBuy;
+}
+
+export function loadTransferSingleMint(
+  operator: Bytes,
+  from: Bytes,
+  to: Bytes,
+  trademark_id: BigInt,
+  value: BigInt,
+  blockNumber: BigInt,
+  blockTimestamp: BigInt,
+  transactionHash: Bytes,
+): TransferSingleMint {
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(transactionHash)
+  );
+  let transferSingleMint = TransferSingleMint.load(id);
+  if (!transferSingleMint) {
+    transferSingleMint = new TransferSingleMint(id);
+    transferSingleMint.operator = operator
+    transferSingleMint.from = from
+    transferSingleMint.to = to
+    transferSingleMint.trademark_id = trademark_id
+    transferSingleMint.value = value
+
+    transferSingleMint.blockNumber = blockNumber
+    transferSingleMint.blockTimestamp = blockTimestamp
+    transferSingleMint.transactionHash = transactionHash
+    transferSingleMint.save();
+  }
+  return transferSingleMint;
+}
+
+export function loadTransferSingleBuy(
+  operator: Bytes,
+  from: Bytes,
+  to: Bytes,
+  trademark_id: BigInt,
+  value: BigInt,
+  blockNumber: BigInt,
+  blockTimestamp: BigInt,
+  transactionHash: Bytes,
+): TransferSingleBuy {
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(transactionHash)
+  );
+  let transferSingleBuy = TransferSingleBuy.load(id);
+  if (!transferSingleBuy) {
+    transferSingleBuy = new TransferSingleBuy(id);
+    transferSingleBuy.operator = operator
+    transferSingleBuy.from = from
+    transferSingleBuy.to = to
+    transferSingleBuy.trademark_id = trademark_id
+    transferSingleBuy.value = value
+
+    transferSingleBuy.blockNumber = blockNumber
+    transferSingleBuy.blockTimestamp = blockTimestamp
+    transferSingleBuy.transactionHash = transactionHash
+    transferSingleBuy.save();
+  }
+  return transferSingleBuy;
+}
+
