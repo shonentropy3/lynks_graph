@@ -70,11 +70,27 @@ type LynksBalance @entity {
   balance: BigInt!
 }
 
+type LynksAmount @entity {
+  id: Bytes!
+  address: Bytes!
+  transferAmount: BigInt!
+  mintAmount: BigInt!
+  buyAmount: BigInt!
+}
+
 type TrademarkBalance @entity {
   id: Bytes! # address + trademark_id
   address: Bytes!
   balance: BigInt!
   trademark_id: BigInt! # uint256
+}
+
+type TrademarkAmount @entity {
+  id: Bytes!
+  address: Bytes!
+  transferAmount: BigInt!
+  mintAmount: BigInt!
+  buyAmount: BigInt!
 }
 
 type TransferSingle @entity(immutable: true) {
