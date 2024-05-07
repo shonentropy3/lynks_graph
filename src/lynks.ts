@@ -5,9 +5,13 @@ import {
   Transfer,
   LynksBalance,
   TransferMint,
-  TransferBuy
+  TransferBuy,
+  LynksAmount
 } from "../generated/schema"
 import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
+
+const ADDRESS1 = Bytes.fromHexString("0x0000000000000000000000000000000000000000");
+const ADDRESS2 = Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02");
 
 export function handleTransfer(event: TransferEvent): void {
   let entity = new Transfer(
@@ -28,7 +32,7 @@ export function handleTransfer(event: TransferEvent): void {
   let toBalance = loadLynksBalance(event.params.to)
   toBalance.balance = toBalance.balance.plus(BigInt.fromI32(1));
   toBalance.save();
-
+  
 //0x128adCD896f1982862dA3cE5977BD5152447cb02
   if(entity.from == Bytes.fromHexString("0x0000000000000000000000000000000000000000")){
     let transferMint = loadTransferMint(event.transaction.hash, event.params.from, event.params.to, event.params.tokenId, event.block.number, event.block.timestamp);
@@ -40,6 +44,11 @@ export function handleTransfer(event: TransferEvent): void {
     transferMint.blockTimestamp = event.block.timestamp
     transferMint.transactionHash = event.transaction.hash
     transferMint.save()
+
+    let lynksAmount = loadLynksAmount(event.params.to, BigInt.fromI32(0), BigInt.fromI32(1), BigInt.fromI32(0));
+    lynksAmount.mintAmount = lynksAmount.mintAmount.plus(BigInt.fromI32(1));
+    lynksAmount.address = event.params.to;
+    lynksAmount.save()
   }
 
   if(entity.from == Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02")){
@@ -52,6 +61,17 @@ export function handleTransfer(event: TransferEvent): void {
     transferBuy.blockTimestamp = event.block.timestamp
     transferBuy.transactionHash = event.transaction.hash
     transferBuy.save()
+
+    let lynksAmount = loadLynksAmount(event.params.to, BigInt.fromI32(0), BigInt.fromI32(1), BigInt.fromI32(1));
+    lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
+    lynksAmount.address = event.params.to;
+    lynksAmount.save()
+  }
+
+  if(entity.from != ADDRESS1 && entity.from != ADDRESS2 ) {
+    let lynksAmount = loadLynksAmount(event.params.to, BigInt.fromI32(1), BigInt.fromI32(1), BigInt.fromI32(0));
+    lynksAmount.transferAmount = lynksAmount.transferAmount.plus(BigInt.fromI32(1));
+    lynksAmount.address = event.params.from;
   }
   entity.save()
 }
@@ -68,6 +88,23 @@ export function loadLynksBalance(address: Bytes): LynksBalance {
     lynksBalance.save();
   }
   return lynksBalance;
+
+}
+
+export function loadLynksAmount(address: Bytes, transferAmount: BigInt, mintAmount: BigInt, buyAmount: BigInt): LynksAmount {
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(address)
+  );
+  let lynksAmount = LynksAmount.load(id);
+  if (!lynksAmount) {
+    lynksAmount = new LynksAmount(id);
+    lynksAmount.address = address;
+    lynksAmount.transferAmount = transferAmount;
+    lynksAmount.mintAmount = mintAmount;
+    lynksAmount.buyAmount = buyAmount;
+    lynksAmount.save();
+  }
+  return lynksAmount;
 
 }
 

@@ -91,6 +91,7 @@ type TrademarkAmount @entity {
   transferAmount: BigInt!
   mintAmount: BigInt!
   buyAmount: BigInt!
+  trademark_id: BigInt!
 }
 
 type TransferSingle @entity(immutable: true) {

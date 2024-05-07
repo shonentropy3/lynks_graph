@@ -9,9 +9,13 @@ import {
   TransferBatchMint,
   TransferBatchBuy,
   TransferSingleMint,
-  TransferSingleBuy
+  TransferSingleBuy,
+  TrademarkAmount
 } from "../generated/schema"
 import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
+
+const ADDRESS1 = Bytes.fromHexString("0x0000000000000000000000000000000000000000");
+const ADDRESS2 = Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02");
 
 export function handleTransferBatch(event: TransferBatchEvent): void {
   let entity = new TransferBatch(
@@ -46,6 +50,16 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
     transferBatchMint.blockTimestamp = event.block.timestamp
     transferBatchMint.transactionHash = event.transaction.hash
     transferBatchMint.save()
+
+    for(let i = 0; i < event.params.ids.length; i++) {
+      let id = event.params.ids[i]
+      let value = event.params.values[i]
+      let trademarkAmount = loadTrademarkAmount(event.params.to, id, BigInt.fromI32(0), value, BigInt.fromI32(0));
+      trademarkAmount.mintAmount = trademarkAmount.mintAmount.plus(value)
+      trademarkAmount.address = event.params.to
+      trademarkAmount.trademark_id = id
+      trademarkAmount.save()
+    }
   }
 
   if(entity.from == Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02")){
@@ -66,6 +80,28 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
       transferBatchBuy.blockTimestamp = event.block.timestamp
       transferBatchBuy.transactionHash = event.transaction.hash
       transferBatchBuy.save()
+
+      for(let i = 0; i < event.params.ids.length; i++) {
+        let id = event.params.ids[i]
+        let value = event.params.values[i]
+        let trademarkAmount = loadTrademarkAmount(event.params.to, id, BigInt.fromI32(0), BigInt.fromI32(0), value);
+        trademarkAmount.buyAmount = trademarkAmount.buyAmount.plus(value)
+        trademarkAmount.address = event.params.to
+        trademarkAmount.trademark_id = id
+        trademarkAmount.save()
+      }
+  }
+
+  if(entity.from != ADDRESS1 && entity.from != ADDRESS2 ) {
+    for(let i = 0; i < event.params.ids.length; i++) {
+      let id = event.params.ids[i]
+      let value = event.params.values[i]
+      let trademarkAmount = loadTrademarkAmount(event.params.to, id, value, BigInt.fromI32(0), BigInt.fromI32(0));
+      trademarkAmount.transferAmount = trademarkAmount.transferAmount.plus(value)
+      trademarkAmount.address = event.params.to
+      trademarkAmount.trademark_id = id
+      trademarkAmount.save()
+    }
   }
 
   entity.save()
@@ -132,6 +168,12 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
     transferSingleMint.blockTimestamp = event.block.timestamp
     transferSingleMint.transactionHash = event.transaction.hash
     transferSingleMint.save()
+
+    let trademarkAmount = loadTrademarkAmount(event.params.to, event.params.id, BigInt.fromI32(0), event.params.value, BigInt.fromI32(0));
+    trademarkAmount.address = event.params.to
+    trademarkAmount.mintAmount = trademarkAmount.mintAmount.plus(event.params.value)
+    trademarkAmount.trademark_id = event.params.id
+    trademarkAmount.save()
   }
   if(entity.from == Bytes.fromHexString("0x128adCD896f1982862dA3cE5977BD5152447cb02")){
     let transferSingleBuy = loadTransferSingleBuy(event.params.operator,
@@ -152,6 +194,19 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
       transferSingleBuy.blockTimestamp = event.block.timestamp
       transferSingleBuy.transactionHash = event.transaction.hash
       transferSingleBuy.save()
+
+      let trademarkAmount = loadTrademarkAmount(event.params.to, event.params.id, BigInt.fromI32(0), BigInt.fromI32(0), event.params.value);
+    trademarkAmount.address = event.params.to
+    trademarkAmount.buyAmount = trademarkAmount.buyAmount.plus(event.params.value)
+    trademarkAmount.trademark_id = event.params.id
+    trademarkAmount.save()
+    }
+
+    if(entity.from != ADDRESS1 && entity.from != ADDRESS2 ) {
+      let trademarkAmount = loadTrademarkAmount(event.params.to, event.params.id, event.params.value, BigInt.fromI32(0), BigInt.fromI32(0));
+      trademarkAmount.transferAmount = trademarkAmount.transferAmount.plus(event.params.value)
+      trademarkAmount.trademark_id = event.params.id
+      trademarkAmount.save()
     }
 
   let trademarkBalanceFrom = TrademarkBalance.load(event.params.from.concatI32(event.params.id.toI32()))
@@ -173,6 +228,23 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
   }
   trademarkBalanceTo.balance = trademarkBalanceTo.balance.plus(event.params.value)
   trademarkBalanceTo.save()
+}
+
+export function loadTrademarkAmount(address: Bytes, trademark_id: BigInt, transferAmount: BigInt, mintAmount: BigInt, buyAmount: BigInt): TrademarkAmount{
+  const id = Bytes.fromByteArray(
+    crypto.keccak256(address).concatI32(trademark_id.toI32())
+  );
+  let trademarkAmount = TrademarkAmount.load(id);
+  if (!trademarkAmount) {
+    trademarkAmount = new TrademarkAmount(id);
+    trademarkAmount.address = address;
+    trademarkAmount.transferAmount = transferAmount;
+    trademarkAmount.mintAmount = mintAmount;
+    trademarkAmount.buyAmount = buyAmount;
+    trademarkAmount.trademark_id = trademark_id;
+    trademarkAmount.save();
+  }
+  return trademarkAmount;
 }
 
 export function loadTransferBatchMint(operator: Bytes,
