@@ -14,7 +14,7 @@ import {
 } from "../generated/schema"
 import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
 
-import {ADDRESS_ZERO, ADDRESS_ALIEN_SWAP} from './constant'
+import {ADDRESS_ZERO, ADDRESS_ALIEN_SWAP, ADDRESS_ALIEN_SWAP2} from './constant'
 
 export function handleTransferBatch(event: TransferBatchEvent): void {
   let entity = new TransferBatch(
@@ -59,7 +59,7 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
     }
   }
 
-  else if(event.params.operator == ADDRESS_ALIEN_SWAP){
+  else if(event.params.operator == ADDRESS_ALIEN_SWAP2 || event.params.from == ADDRESS_ALIEN_SWAP){
     let transferBatchBuy = loadTransferBatchBuy(event.params.operator,
       event.params.to,
       event.params.ids as BigInt[],
@@ -170,7 +170,7 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
     trademarkAmount.mintAmount = trademarkAmount.mintAmount.plus(event.params.value)
     trademarkAmount.save()
   }
-  else if(event.params.operator == ADDRESS_ALIEN_SWAP){
+  else if(event.params.operator == ADDRESS_ALIEN_SWAP2 || event.params.from == ADDRESS_ALIEN_SWAP){
     let transferSingleBuy = loadTransferSingleBuy(event.params.operator,
       event.params.from,
       event.params.to,
