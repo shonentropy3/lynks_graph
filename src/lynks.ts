@@ -75,7 +75,7 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.to;
     lynksAmount.save();
-  } else if(entity.to == ADDRESS_ALIEN_SWAP2){
+  } else if(event.transaction.to == ADDRESS_ALIEN_SWAP2){
     let transferBuy = loadTransferBuy(
       event.transaction.hash,
       event.params.from,
