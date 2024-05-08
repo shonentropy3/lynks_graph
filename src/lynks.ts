@@ -99,7 +99,7 @@ export function handleTransfer(event: TransferEvent): void {
     transferBuy.transactionHash = event.transaction.hash;
     transferBuy.save();
 
-    let lynksAmount = loadLynksAmount(event.params.from);
+    let lynksAmount = loadLynksAmount(event.params.to);
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.from;
     lynksAmount.save();
