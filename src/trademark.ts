@@ -72,6 +72,7 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
       transferBatchBuy.to = event.params.to
       transferBatchBuy.ids = event.params.ids
       transferBatchBuy.values = event.params.values
+      
   
       transferBatchBuy.blockNumber = event.block.number
       transferBatchBuy.blockTimestamp = event.block.timestamp
