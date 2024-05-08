@@ -6,9 +6,13 @@ import {
   TransferBuy,
   LynksAmount,
 } from "../generated/schema";
-import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
+import { Bytes, crypto, BigInt, Address } from "@graphprotocol/graph-ts";
 
-import { ADDRESS_ZERO, ADDRESS_ALIEN_SWAP,  ADDRESS_ALIEN_SWAP2} from "./constant";
+import {
+  ADDRESS_ZERO,
+  ADDRESS_ALIEN_SWAP,
+  ADDRESS_ALIEN_SWAP2,
+} from "./constant";
 
 export function handleTransfer(event: TransferEvent): void {
   let entity = new Transfer(
@@ -29,6 +33,8 @@ export function handleTransfer(event: TransferEvent): void {
   let toBalance = loadLynksBalance(event.params.to);
   toBalance.balance = toBalance.balance.plus(BigInt.fromI32(1));
   toBalance.save();
+
+  let txTo: Address | null = event.transaction.to;
 
   //0x128adCD896f1982862dA3cE5977BD5152447cb02
   if (entity.from == ADDRESS_ZERO) {
@@ -53,7 +59,7 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.mintAmount = lynksAmount.mintAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.to;
     lynksAmount.save();
-  } else if (entity.from == ADDRESS_ALIEN_SWAP ) {
+  } else if (entity.from == ADDRESS_ALIEN_SWAP) {
     let transferBuy = loadTransferBuy(
       event.transaction.hash,
       event.params.from,
@@ -75,7 +81,7 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.to;
     lynksAmount.save();
-  } else if(event.transaction.to == ADDRESS_ALIEN_SWAP2){
+  } else if (txTo && txTo == ADDRESS_ALIEN_SWAP2) {
     let transferBuy = loadTransferBuy(
       event.transaction.hash,
       event.params.from,
@@ -97,7 +103,7 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.from;
     lynksAmount.save();
-  }else {
+  } else {
     let lynksAmount1 = loadLynksAmount(event.params.to);
     lynksAmount1.transferAmountIn = lynksAmount1.transferAmountIn.plus(
       BigInt.fromI32(1)

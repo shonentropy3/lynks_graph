@@ -1,7 +1,7 @@
 import {
   TransferBatch as TransferBatchEvent,
-  TransferSingle as TransferSingleEvent
-} from "../generated/booster_1/booster_1"
+  TransferSingle as TransferSingleEvent,
+} from "../generated/booster_1/trademark";
 import {
   TransferBatch,
   TransferSingle,
@@ -11,7 +11,6 @@ import {
 import { Bytes, BigInt, crypto } from "@graphprotocol/graph-ts";
 
 export function handleTransferBatch(event: TransferBatchEvent): void {
-
   let booster1Amount1 = loadBooster1Amount(event.params.to);
   let booster1Amount2 = loadBooster1Amount(event.params.from);
   for (let i = 0; i < event.params.ids.length; i++) {
@@ -46,7 +45,6 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
 }
 
 export function handleTransferSingle(event: TransferSingleEvent): void {
-
   let value = event.params.value;
   let id = event.params.id;
 

@@ -1,7 +1,7 @@
 import {
   TransferBatch as TransferBatchEvent,
   TransferSingle as TransferSingleEvent,
-} from "../generated/booster_1/booster_1";
+} from "../generated/booster_1/trademark";
 import {
   TransferBatch,
   TransferSingle,
