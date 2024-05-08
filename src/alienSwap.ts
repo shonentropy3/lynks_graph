@@ -23,7 +23,7 @@ import {
 
     let lynksAddress: Address | null = event.address;
   
-    if (!lynksAddress && lynksAddress == ADDRESS_ALIEN_SWAP3) {
+    if (lynksAddress && lynksAddress == ADDRESS_ALIEN_SWAP3) {
       let transferBuy = loadTransferBuy(
         event.transaction.hash,
         event.params.from,
