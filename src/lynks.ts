@@ -33,6 +33,13 @@ export function handleTransfer(event: TransferEvent): void {
   let toBalance = loadLynksBalance(event.params.to);
   toBalance.balance = toBalance.balance.plus(BigInt.fromI32(1));
   toBalance.save();
+  entity.save();
+
+  let lynksAmount2 = loadLynksAmount(event.params.from);
+  lynksAmount2.transferAmountOut = lynksAmount2.transferAmountOut.plus(
+    BigInt.fromI32(1)
+  );
+  lynksAmount2.save();
 
   let txTo: Address | null = event.transaction.to;
 
@@ -106,14 +113,7 @@ export function handleTransfer(event: TransferEvent): void {
       BigInt.fromI32(1)
     );
     lynksAmount1.save();
-
-    let lynksAmount2 = loadLynksAmount(event.params.from);
-    lynksAmount2.transferAmountOut = lynksAmount2.transferAmountOut.plus(
-      BigInt.fromI32(1)
-    );
-    lynksAmount2.save();
   }
-  entity.save();
 }
 
 export function loadLynksBalance(address: Bytes): LynksBalance {
