@@ -65,6 +65,7 @@ dataSources:
       entities:
         - TransferBatch
         - TransferSingle
+        - Boost1Balance
       abis:
         - name: trademark
           file: ./abis/trademark.json
@@ -89,6 +90,7 @@ dataSources:
       entities:
         - TransferBatch
         - TransferSingle
+        - Boost2Balance
       abis:
         - name: trademark
           file: ./abis/trademark.json
@@ -97,4 +99,4 @@ dataSources:
           handler: handleTransferBatch
         - event: TransferSingle(indexed address,indexed address,indexed address,uint256,uint256)
           handler: handleTransferSingle
-      file: ./src/booster-1.ts
+      file: ./src/booster-2.ts
