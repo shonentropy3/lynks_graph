@@ -8,7 +8,7 @@ import {
 } from "../generated/schema";
 import { Bytes, crypto, BigInt } from "@graphprotocol/graph-ts";
 
-import { ADDRESS_ZERO, ADDRESS_ALIEN_SWAP } from "./constant";
+import { ADDRESS_ZERO, ADDRESS_ALIEN_SWAP,  ADDRESS_ALIEN_SWAP2} from "./constant";
 
 export function handleTransfer(event: TransferEvent): void {
   let entity = new Transfer(
@@ -53,7 +53,7 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.mintAmount = lynksAmount.mintAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.to;
     lynksAmount.save();
-  } else if (entity.from == ADDRESS_ALIEN_SWAP) {
+  } else if (entity.from == ADDRESS_ALIEN_SWAP ) {
     let transferBuy = loadTransferBuy(
       event.transaction.hash,
       event.params.from,
@@ -75,7 +75,29 @@ export function handleTransfer(event: TransferEvent): void {
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.to;
     lynksAmount.save();
-  } else {
+  } else if(entity.to == ADDRESS_ALIEN_SWAP2){
+    let transferBuy = loadTransferBuy(
+      event.transaction.hash,
+      event.params.from,
+      event.params.to,
+      event.params.tokenId,
+      event.block.number,
+      event.block.timestamp
+    );
+    transferBuy.from = event.params.from;
+    transferBuy.to = event.params.to;
+    transferBuy.tokenId = event.params.tokenId;
+
+    transferBuy.blockNumber = event.block.number;
+    transferBuy.blockTimestamp = event.block.timestamp;
+    transferBuy.transactionHash = event.transaction.hash;
+    transferBuy.save();
+
+    let lynksAmount = loadLynksAmount(event.params.from);
+    lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
+    lynksAmount.address = event.params.from;
+    lynksAmount.save();
+  }else {
     let lynksAmount1 = loadLynksAmount(event.params.to);
     lynksAmount1.transferAmountIn = lynksAmount1.transferAmountIn.plus(
       BigInt.fromI32(1)

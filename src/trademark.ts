@@ -59,7 +59,7 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
     }
   }
 
-  else if(entity.from == ADDRESS_ALIEN_SWAP){
+  else if(event.params.operator == ADDRESS_ALIEN_SWAP){
     let transferBatchBuy = loadTransferBatchBuy(event.params.operator,
       event.params.to,
       event.params.ids as BigInt[],
@@ -170,7 +170,7 @@ export function handleTransferSingle(event: TransferSingleEvent): void {
     trademarkAmount.mintAmount = trademarkAmount.mintAmount.plus(event.params.value)
     trademarkAmount.save()
   }
-  else if(entity.from == ADDRESS_ALIEN_SWAP){
+  else if(event.params.operator == ADDRESS_ALIEN_SWAP){
     let transferSingleBuy = loadTransferSingleBuy(event.params.operator,
       event.params.from,
       event.params.to,
