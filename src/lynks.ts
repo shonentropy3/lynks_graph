@@ -57,7 +57,6 @@ export function handleTransfer(event: TransferEvent): void {
 
     let lynksAmount = loadLynksAmount(event.params.to);
     lynksAmount.mintAmount = lynksAmount.mintAmount.plus(BigInt.fromI32(1));
-    lynksAmount.address = event.params.to;
     lynksAmount.save();
   } else if (entity.from == ADDRESS_ALIEN_SWAP) {
     let transferBuy = loadTransferBuy(
@@ -79,7 +78,6 @@ export function handleTransfer(event: TransferEvent): void {
 
     let lynksAmount = loadLynksAmount(event.params.to);
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
-    lynksAmount.address = event.params.to;
     lynksAmount.save();
   } else if (txTo && txTo == ADDRESS_ALIEN_SWAP2) {
     let transferBuy = loadTransferBuy(
@@ -101,7 +99,6 @@ export function handleTransfer(event: TransferEvent): void {
 
     let lynksAmount = loadLynksAmount(event.params.to);
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
-    lynksAmount.address = event.params.from;
     lynksAmount.save();
   } else {
     let lynksAmount1 = loadLynksAmount(event.params.to);
