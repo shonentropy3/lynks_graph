@@ -10,8 +10,7 @@ import { Bytes, crypto, BigInt, Address } from "@graphprotocol/graph-ts";
 
 import {
   ADDRESS_ZERO,
-  ADDRESS_ALIEN_SWAP,
-  ADDRESS_ALIEN_SWAP2,
+  ADDRESS_ALIEN_SWAP
 } from "./constant";
 
 export function handleTransfer(event: TransferEvent): void {
@@ -80,28 +79,6 @@ export function handleTransfer(event: TransferEvent): void {
     let lynksAmount = loadLynksAmount(event.params.to);
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.address = event.params.to;
-    lynksAmount.save();
-  } else if (txTo && txTo == ADDRESS_ALIEN_SWAP2) {
-    let transferBuy = loadTransferBuy(
-      event.transaction.hash,
-      event.params.from,
-      event.params.to,
-      event.params.tokenId,
-      event.block.number,
-      event.block.timestamp
-    );
-    transferBuy.from = event.params.from;
-    transferBuy.to = event.params.to;
-    transferBuy.tokenId = event.params.tokenId;
-
-    transferBuy.blockNumber = event.block.number;
-    transferBuy.blockTimestamp = event.block.timestamp;
-    transferBuy.transactionHash = event.transaction.hash;
-    transferBuy.save();
-
-    let lynksAmount = loadLynksAmount(event.params.from);
-    lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
-    lynksAmount.address = event.params.from;
     lynksAmount.save();
   } else {
     let lynksAmount1 = loadLynksAmount(event.params.to);
