@@ -102,12 +102,15 @@ export function handleTransferBatch(event: TransferBatchEvent): void {
       trademarkAmount1.transferAmountIn =
         trademarkAmount1.transferAmountIn.plus(value);
       trademarkAmount1.save();
-
-      let trademarkAmount2 = loadTrademarkAmount(event.params.from, id);
-      trademarkAmount2.transferAmountOut =
-        trademarkAmount2.transferAmountOut.plus(value);
-      trademarkAmount2.save();
     }
+  }
+  for (let i = 0; i < event.params.ids.length; i++) {
+    let id = event.params.ids[i];
+    let value = event.params.values[i];
+    let trademarkAmount2 = loadTrademarkAmount(event.params.from, id);
+    trademarkAmount2.transferAmountOut =
+      trademarkAmount2.transferAmountOut.plus(value);
+    trademarkAmount2.save();
   }
 
   entity.save();
