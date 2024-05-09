@@ -62,20 +62,6 @@ async function main() {
   const lynksBuyCost = []
   const res = await fetchData(LynksBalanceGte3, "lynksBalances");
   console.log('************** start calc lynks buy cost **************')
-  for (const item of res) {
-    const { address, balance } = item;
-    const query = getLynksBuyQuery(address);
-    const transfers = await fetchData(query, "transferBuys");
-    let cost = 0n;
-    for (const transfer of transfers) {
-      const { transactionHash } = transfer;
-      const val = await getCostByHash(transactionHash, address)
-      cost += val;
-    }
-    lynksBuyCost.push({ address, cost: formatCost(cost) });
-  }
-  console.table(lynksBuyCost);
-  console.log('************** end calc lynks buy cost **************')
 
   const trademarkBuyCosts_1 = []
   console.log('************** start calc trademark buy cost **************')
@@ -85,8 +71,14 @@ async function main() {
     const query = getTradermarkBuyQuery(address, 1);
     const transfers = await fetchData(query, "transferSingleBuys");
     let cost = 0n;
+    const map = {}
     for (const transfer of transfers) {
       const { transactionHash, value } = transfer;
+      if(map[transactionHash]) {
+        continue;
+      } else {
+        map[transactionHash] = true;
+      }
       const val = await getCostByHash(transactionHash, address)
       cost += val;
     }
@@ -98,8 +90,15 @@ async function main() {
     const query = getTradermarkBuyQuery(address, 2);
     const transfers = await fetchData(query, "transferSingleBuys");
     let cost = 0n;
+    const map = {}
+
     for (const transfer of transfers) {
       const { transactionHash, value } = transfer;
+      if(map[transactionHash]) {
+        continue;
+      } else {
+        map[transactionHash] = true;
+      }
       const val = await getCostByHash(transactionHash, address)
       cost += val;
     }
@@ -111,8 +110,14 @@ async function main() {
     const query = getTradermarkBuyQuery(address, 3);
     const transfers = await fetchData(query, "transferSingleBuys");
     let cost = 0n;
+    const map ={}
     for (const transfer of transfers) {
       const { transactionHash, value } = transfer;
+      if(map[transactionHash]) {
+        continue;
+      } else {
+        map[transactionHash] = true;
+      }
       const val = await getCostByHash(transactionHash, address)
       cost += val;
     }
@@ -124,8 +129,14 @@ async function main() {
     const query = getTradermarkBuyQuery(address, 4);
     const transfers = await fetchData(query, "transferSingleBuys");
     let cost = 0n;
+    const map = {}
     for (const transfer of transfers) {
       const { transactionHash, value } = transfer;
+      if(map[transactionHash]) {
+        continue;
+      } else {
+        map[transactionHash] = true;
+      }
       const val = await getCostByHash(transactionHash, address)
       cost += val;
     }
