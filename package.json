@@ -2,12 +2,13 @@
   "name": "lynks",
   "license": "UNLICENSED",
   "scripts": {
-    "codegen": "graph codegen",
-    "build": "graph build",
-    "deploy": "graph deploy lynks --ipfs http://3.114.68.110:5001 --node http://3.114.68.110:8020",
-    "create-local": "graph create lynks --node http://3.114.68.110:8020",
-    "remove-local": "graph remove --node http://localhost:8020/ lynks",
-    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 lynks",
+    "codegen": "graph codegen","build": "graph build",
+    "create": "graph create aqua-points --node http://localhost:8020",
+    "deploy": "graph deploy aqua-points --ipfs http://localhost:5001 --node http://localhost:8020/",
+    "remove": "graph remove --node http://localhost:8020 aqua-points",
+    "create-local": "graph create aqua-points --node http://3.114.68.110:8020",
+    "deploy-local": "graph deploy aqua-points --ipfs http://3.114.68.110:5001--node http://3.114.68.110:8020",
+    "remove-local": "graph remove --node http://3.114.68.110:8020 aqua-points",
     "test": "graph test"
   },
   "dependencies": {
