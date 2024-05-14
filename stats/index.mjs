@@ -8,7 +8,10 @@ const GAS_ADDRESS = '0x000000000000000000000000000000000000000000000000000000000
 const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 const provider = new JsonRpcProvider("https://rpc.zklink.io");
 const LynksBalanceGte3 =
-  '{"query":"query lynks_transfers {\\n  lynksBalances(where: {balance_gte: \\"3\\"}, orderBy: balance, orderDirection: desc) {\\n    address\\n    balance\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}';
+'{"query":"query lynks_transfers {\\n  lynksBalances(\\n    where: {balance_gt: \\"0\\"}\\n    orderBy: balance\\n    orderDirection: desc\\n    first: 1000\\n    skip: 2000\\n  ) {\\n    address\\n    balance\\n    id\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}'
+const getLynksBalanceQuery = (balance, skip) => {
+  return `{"query":"query lynks_transfers {\\n  lynksBalances(\\n    where: {balance_gt: \\"${balance}\\"}\\n    orderBy: balance\\n    orderDirection: desc\\n    first: 1000\\n    skip: ${skip}\\n  ) {\\n    address\\n    balance\\n    id\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
+}
 const getTradermarkBuyQuery = (address, tokenId) => {
   return `{"query":"query lynks_transfers {\\n  transferSingleBuys(\\n    where: {to: \\"${address}\\", trademark_id: \\"${tokenId}\\"}\\n    first: 1000\\n  ) {\\n    operator\\n    to\\n    trademark_id\\n    transactionHash\\n    value\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
 }
@@ -26,7 +29,7 @@ const getTrademarkAmountQuery = (addressList, tokenId) => {
   return `{"query":"query lynks_transfers {\\n  trademarkAmounts(\\n    where: {trademark_id: \\"${tokenId}\\", address_in: [${address_in}]}\\n  ) {\\n    address\\n    buyAmount\\n    mintAmount\\n    trademark_id\\n    transferAmountIn\\n    transferAmountOut\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
 }
 
-async function fetchData(query, key) {
+async function fetchData(query, key, ) {
   return fetch("http://3.114.68.110:8000/subgraphs/name/lynks4", {
     headers: {
       "content-type": "application/json",
@@ -58,10 +61,41 @@ async function main() {
   // const va = new BigNumber(1416407050000000000000n + 368800000000000000n).dividedBy(10**18).toFixed(2)
   // console.log('val: ', va)
   // return
-
-  const lynksBuyCost = []
-  const res = await fetchData(LynksBalanceGte3, "lynksBalances");
   console.log('************** start calc lynks buy cost **************')
+  const lynksBuyCost = []
+
+  // const res = []
+  // let skip = 0;
+  // while (true) {
+  //   const query = getLynksBalanceQuery(0, skip);
+  //   const data = await fetchData(query, "lynksBalances");
+  //   if (data.length === 0) {
+  //     break;
+  //   }
+  //   res.push(...data);
+  //   skip += 1000;
+  // }
+  let skip = 0;
+  const query = getLynksBalanceQuery(0, skip);
+  const res = await fetchData(query, 'lynksBalances')
+
+  console.log('res length: ', res.length)
+
+  for (const item of res) {
+    const { address, balance } = item;
+    const query = getLynksBuyQuery(address);
+    const transfers = await fetchData(query, "transferBuys");
+    let cost = 0n;
+    for (const transfer of transfers) {
+      const { transactionHash } = transfer;
+      const val = await getCostByHash(transactionHash, address)
+      cost += val;
+    }
+    lynksBuyCost.push({ address, cost: formatCost(cost) });
+  }
+  // console.table(lynksBuyCost);
+  console.log('************** end calc lynks buy cost **************')
+
 
   const trademarkBuyCosts_1 = []
   console.log('************** start calc trademark buy cost **************')
@@ -146,20 +180,78 @@ async function main() {
   console.log('************** end calc trademark buy cost **************')
 
 
-  const lynksAmountQuery = getLynksAmountQuery(res.map(item => item.address))
-  const lynksAmounts = await fetchData(lynksAmountQuery, 'lynksAmounts')
+  const lynksAmounts = []
+  let start = 0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const lynksAmountQuery = getLynksAmountQuery(addressList)
+      lynksAmounts.push(...(await fetchData(lynksAmountQuery, 'lynksAmounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
 
-  const trademarkAmountQuery_1 = getTrademarkAmountQuery(res.map(item => item.address), 1)
-  const trademarkAmounts_1 = await fetchData(trademarkAmountQuery_1, 'trademarkAmounts')
 
-  const trademarkAmountQuery_2 = getTrademarkAmountQuery(res.map(item => item.address), 2)
-  const trademarkAmounts_2 = await fetchData(trademarkAmountQuery_2, 'trademarkAmounts')
+  
 
-  const trademarkAmountQuery_3 = getTrademarkAmountQuery(res.map(item => item.address), 3)
-  const trademarkAmounts_3 = await fetchData(trademarkAmountQuery_3, 'trademarkAmounts')
+  const trademarkAmounts_1 = []
+  start = 0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const trademarkAmountQuery_1 = getTrademarkAmountQuery(addressList, 1)
+      trademarkAmounts_1.push(...(await fetchData(trademarkAmountQuery_1, 'trademarkAmounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
 
-  const trademarkAmountQuery_4 = getTrademarkAmountQuery(res.map(item => item.address), 4)
-  const trademarkAmounts_4 = await fetchData(trademarkAmountQuery_4, 'trademarkAmounts')
+  const trademarkAmounts_2 = []
+  start = 0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const trademarkAmountQuery_2 = getTrademarkAmountQuery(addressList, 2)
+      trademarkAmounts_2.push(...(await fetchData(trademarkAmountQuery_2, 'trademarkAmounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
+
+  const trademarkAmounts_3 = []
+  start = 0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const trademarkAmountQuery_3 = getTrademarkAmountQuery(addressList, 3)
+      trademarkAmounts_3.push(...(await fetchData(trademarkAmountQuery_3, 'trademarkAmounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
+
+  const trademarkAmounts_4 = []
+  start = 0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const trademarkAmountQuery_4 = getTrademarkAmountQuery(addressList, 4)
+      trademarkAmounts_4.push(...(await fetchData(trademarkAmountQuery_4, 'trademarkAmounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
 
 
 
