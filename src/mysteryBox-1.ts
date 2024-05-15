@@ -1,10 +1,10 @@
 import { Transfer as TransferEvent } from "../generated/lynks/lynks";
 import {
   Transfer,
-  LynksBalance,
+  MysteryBox1Balance,
   TransferMint,
   TransferBuy,
-  LynksAmount,
+  MysteryBox1Amount,
 } from "../generated/schema";
 import { Bytes, crypto, BigInt, Address } from "@graphprotocol/graph-ts";
 
@@ -27,16 +27,16 @@ export function handleTransfer(event: TransferEvent): void {
   entity.transactionHash = event.transaction.hash;
   entity.contract = event.address;
 
-  let fromBalance = loadLynksBalance(event.params.from);
+  let fromBalance = loadMysteryBox1Balance(event.params.from);
   fromBalance.balance = fromBalance.balance.minus(BigInt.fromI32(1));
   fromBalance.save();
 
-  let toBalance = loadLynksBalance(event.params.to);
+  let toBalance = loadMysteryBox1Balance(event.params.to);
   toBalance.balance = toBalance.balance.plus(BigInt.fromI32(1));
   toBalance.save();
   entity.save();
 
-  let lynksAmount2 = loadLynksAmount(event.params.from);
+  let lynksAmount2 = loadMysteryBox1Amount(event.params.from);
   lynksAmount2.transferAmountOut = lynksAmount2.transferAmountOut.plus(
     BigInt.fromI32(1)
   );
@@ -64,7 +64,7 @@ export function handleTransfer(event: TransferEvent): void {
     transferMint.transactionHash = event.transaction.hash;
     transferMint.save();
 
-    let lynksAmount = loadLynksAmount(event.params.to);
+    let lynksAmount = loadMysteryBox1Amount(event.params.to);
     lynksAmount.mintAmount = lynksAmount.mintAmount.plus(BigInt.fromI32(1));
     lynksAmount.save();
   } else if (entity.from == ADDRESS_ALIEN_SWAP) {
@@ -86,7 +86,7 @@ export function handleTransfer(event: TransferEvent): void {
     transferBuy.transactionHash = event.transaction.hash;
     transferBuy.save();
 
-    let lynksAmount = loadLynksAmount(event.params.to);
+    let lynksAmount = loadMysteryBox1Amount(event.params.to);
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.save();
   } else if (txTo && txTo == ADDRESS_ALIEN_SWAP2) {
@@ -108,11 +108,11 @@ export function handleTransfer(event: TransferEvent): void {
     transferBuy.transactionHash = event.transaction.hash;
     transferBuy.save();
 
-    let lynksAmount = loadLynksAmount(event.params.to);
+    let lynksAmount = loadMysteryBox1Amount(event.params.to);
     lynksAmount.buyAmount = lynksAmount.buyAmount.plus(BigInt.fromI32(1));
     lynksAmount.save();
   } else {
-    let lynksAmount1 = loadLynksAmount(event.params.to);
+    let lynksAmount1 = loadMysteryBox1Amount(event.params.to);
     lynksAmount1.transferAmountIn = lynksAmount1.transferAmountIn.plus(
       BigInt.fromI32(1)
     );
@@ -120,31 +120,31 @@ export function handleTransfer(event: TransferEvent): void {
   }
 }
 
-export function loadLynksBalance(address: Bytes): LynksBalance {
+export function loadMysteryBox1Balance(address: Bytes): MysteryBox1Balance {
   const id = Bytes.fromByteArray(crypto.keccak256(address));
-  let lynksBalance = LynksBalance.load(id);
-  if (!lynksBalance) {
-    lynksBalance = new LynksBalance(id);
-    lynksBalance.address = address;
-    lynksBalance.balance = BigInt.fromI32(0);
-    lynksBalance.save();
+  let balance = MysteryBox1Balance.load(id);
+  if (!balance) {
+    balance = new MysteryBox1Balance(id);
+    balance.address = address;
+    balance.balance = BigInt.fromI32(0);
+    balance.save();
   }
-  return lynksBalance;
+  return balance;
 }
 
-export function loadLynksAmount(address: Bytes): LynksAmount {
+export function loadMysteryBox1Amount(address: Bytes): MysteryBox1Amount {
   const id = Bytes.fromByteArray(crypto.keccak256(address));
-  let lynksAmount = LynksAmount.load(id);
-  if (!lynksAmount) {
-    lynksAmount = new LynksAmount(id);
-    lynksAmount.address = address;
-    lynksAmount.transferAmountIn = BigInt.fromI32(0);
-    lynksAmount.transferAmountOut = BigInt.fromI32(0);
-    lynksAmount.mintAmount = BigInt.fromI32(0);
-    lynksAmount.buyAmount = BigInt.fromI32(0);
-    lynksAmount.save();
+  let amount = MysteryBox1Amount.load(id);
+  if (!amount) {
+    amount = new MysteryBox1Amount(id);
+    amount.address = address;
+    amount.transferAmountIn = BigInt.fromI32(0);
+    amount.transferAmountOut = BigInt.fromI32(0);
+    amount.mintAmount = BigInt.fromI32(0);
+    amount.buyAmount = BigInt.fromI32(0);
+    amount.save();
   }
-  return lynksAmount;
+  return amount;
 }
 
 export function loadTransferMint(

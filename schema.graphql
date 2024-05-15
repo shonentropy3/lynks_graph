@@ -6,7 +6,9 @@ type Transfer @entity(immutable: true) {
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
+  contract: Bytes! # address
 }
+
 
 type TransferMint @entity(immutable: true) {
   id: Bytes!
@@ -16,6 +18,7 @@ type TransferMint @entity(immutable: true) {
   transactionHash: Bytes!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
+  contract: Bytes! # address
 }
 
 type TransferBuy @entity(immutable: true) {
@@ -26,6 +29,7 @@ type TransferBuy @entity(immutable: true) {
   transactionHash: Bytes!
   blockNumber: BigInt!
   blockTimestamp: BigInt!
+  contract: Bytes! # address
 }
 
 type TransferBatch @entity(immutable: true) {
@@ -70,7 +74,37 @@ type LynksBalance @entity {
   balance: BigInt!
 }
 
+type MysteryBox1Balance @entity {
+  id: Bytes!
+  address: Bytes!
+  balance: BigInt!
+}
+
+type MysteryBox2Balance @entity {
+  id: Bytes!
+  address: Bytes!
+  balance: BigInt!
+}
+
 type LynksAmount @entity {
+  id: Bytes!
+  address: Bytes!
+  transferAmountIn: BigInt!
+  transferAmountOut: BigInt!
+  mintAmount: BigInt!
+  buyAmount: BigInt!
+}
+
+type MysteryBox1Amount @entity {
+  id: Bytes!
+  address: Bytes!
+  transferAmountIn: BigInt!
+  transferAmountOut: BigInt!
+  mintAmount: BigInt!
+  buyAmount: BigInt!
+}
+
+type MysteryBox2Amount @entity {
   id: Bytes!
   address: Bytes!
   transferAmountIn: BigInt!

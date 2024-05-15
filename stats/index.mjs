@@ -16,13 +16,33 @@ const getTradermarkBuyQuery = (address, tokenId) => {
   return `{"query":"query lynks_transfers {\\n  transferSingleBuys(\\n    where: {to: \\"${address}\\", trademark_id: \\"${tokenId}\\"}\\n    first: 1000\\n  ) {\\n    operator\\n    to\\n    trademark_id\\n    transactionHash\\n    value\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
 }
 const getLynksBuyQuery = (address) => {
-  return `{"query":"query lynks_transfers {\\n  transferBuys(where: {to: \\"${address}\\"}) {\\n    transactionHash\\n    tokenId\\n    to\\n    from\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`;
+  return `{"query":"query lynks_transfers {\\n  transferBuys(\\n    where: {to: \\"${address}\\", contract: \\"0xd6d05CBdb8A70d3839166926f1b14d74d9953A08\\"}\\n  ) {\\n    tokenId\\n    transactionHash\\n    to\\n    from\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`;
 };
+
+const getMysteryBox1BuyQuery = (address) => {
+  return `{"query":"query lynks_transfers {\\n  transferBuys(\\n    where: {to: \\"${address}\\", contract: \\"0x7fE8510dD408327806baCACaAFE2A445D9f3E9ee\\"}\\n  ) {\\n    tokenId\\n    transactionHash\\n    to\\n    from\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
+}
+
+const getMysteryBox2BuyQuery = (address) => {
+  return `{"query":"query lynks_transfers {\\n  transferBuys(\\n    where: {to: \\"${address}\\", contract: \\"0x831EeF41bf63c9cEF1ed53c226356eBF2D349cD6\\"}\\n  ) {\\n    tokenId\\n    transactionHash\\n    to\\n    from\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
+  
+}
 
 const getLynksAmountQuery = (addressList) => {
   const address_in = addressList.map(address => `\\"${address}\\"`).join(', ')
   return `{"query":"query lynks_transfers {\\n  lynksAmounts(\\n    where: {address_in: [${address_in}]}\\n  ) {\\n    address\\n    buyAmount\\n    mintAmount\\n    transferAmountIn\\n    transferAmountOut\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
 }
+
+const getMysteryBox1AmountQuery = (addressList) => {
+  const address_in = addressList.map(address => `\\"${address}\\"`).join(', ')
+  return `{"query":"query lynks_transfers {\\n  mysteryBox1Amounts(\\n    where: {address_in: [${address_in}]}\\n  ) {\\n    address\\n    buyAmount\\n    mintAmount\\n    transferAmountIn\\n    transferAmountOut\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
+}
+
+const getMysteryBox2AmountQuery = (addressList) => {
+  const address_in = addressList.map(address => `\\"${address}\\"`).join(', ')
+  return `{"query":"query lynks_transfers {\\n  mysteryBox2Amounts(\\n    where: {address_in: [${address_in}]}\\n  ) {\\n    address\\n    buyAmount\\n    mintAmount\\n    transferAmountIn\\n    transferAmountOut\\n  }\\n}","operationName":"lynks_transfers","extensions":{}}`
+}
+
 
 const getTrademarkAmountQuery = (addressList, tokenId) => {
   const address_in = addressList.map(address => `\\"${address}\\"`).join(', ')
@@ -30,7 +50,7 @@ const getTrademarkAmountQuery = (addressList, tokenId) => {
 }
 
 async function fetchData(query, key, ) {
-  return fetch("http://3.114.68.110:8000/subgraphs/name/lynks4", {
+  return fetch("http://3.114.68.110:8000/subgraphs/name/lynks3", {
     headers: {
       "content-type": "application/json",
     },
@@ -64,6 +84,7 @@ async function main() {
   console.log('************** start calc lynks buy cost **************')
   const lynksBuyCost = []
 
+  // *** all data
   // const res = []
   // let skip = 0;
   // while (true) {
@@ -75,8 +96,10 @@ async function main() {
   //   res.push(...data);
   //   skip += 1000;
   // }
+
+  // ** part data
   let skip = 0;
-  const query = getLynksBalanceQuery(0, skip);
+  const query = getLynksBalanceQuery(2, skip);
   const res = await fetchData(query, 'lynksBalances')
 
   console.log('res length: ', res.length)
@@ -95,6 +118,36 @@ async function main() {
   }
   // console.table(lynksBuyCost);
   console.log('************** end calc lynks buy cost **************')
+
+
+  const mysteryBox1BuyCost = []
+  for (const item of res) {
+    const { address, balance } = item;
+    const query = getMysteryBox1BuyQuery(address);
+    const transfers = await fetchData(query, "transferBuys");
+    let cost = 0n;
+    for (const transfer of transfers) {
+      const { transactionHash } = transfer;
+      const val = await getCostByHash(transactionHash, address)
+      cost += val;
+    }
+    mysteryBox1BuyCost.push({ address, cost: formatCost(cost) });
+  }
+
+
+  const mysteryBox2BuyCost = []
+  for (const item of res) {
+    const { address, balance } = item;
+    const query = getMysteryBox2BuyQuery(address);
+    const transfers = await fetchData(query, "transferBuys");
+    let cost = 0n;
+    for (const transfer of transfers) {
+      const { transactionHash } = transfer;
+      const val = await getCostByHash(transactionHash, address)
+      cost += val;
+    }
+    mysteryBox2BuyCost.push({ address, cost: formatCost(cost) });
+  }
 
 
   const trademarkBuyCosts_1 = []
@@ -194,6 +247,33 @@ async function main() {
     }
   }
 
+  const mysteryBox1Amounts = []
+  start =0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const amountQuery = getMysteryBox1AmountQuery(addressList)
+      mysteryBox1Amounts.push(...(await fetchData(amountQuery, 'mysteryBox1Amounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
+
+  const mysteryBox2Amounts = []
+  start = 0;
+  while(true) {
+    let end = start + 100;
+    const addressList = res.slice(start, end).map(item => item.address);
+    if(addressList.length > 0) {
+      const amountQuery = getMysteryBox2AmountQuery(addressList)
+      mysteryBox2Amounts.push(...(await fetchData(amountQuery, 'mysteryBox2Amounts')))
+      start = end;
+    } else {
+      break;
+    }
+  }
 
   
 
@@ -254,13 +334,16 @@ async function main() {
   }
 
 
-
   const result = []
   for(let i = 0; i < res.length; i++) {
     const item = res[i]
     const { address, balance } = item;
     const lynksAmount = lynksAmounts.find(item => item.address === address)
     const lynksBuyCostItem = lynksBuyCost.find(item => item.address === address)
+    const mysteryBox1Amount = mysteryBox1Amounts.find(item => item.address === address)
+    const mysteryBox2Amount = mysteryBox2Amounts.find(item => item.address === address)
+    const mysteryBox1BuyCostItem = mysteryBox1BuyCost.find(item => item.address === address)
+    const mystereyBox2BuyCostItem = mysteryBox2BuyCost.find(item => item.address === address)
     const trademarkAmount_1 = trademarkAmounts_1.find(item => item.address === address)
     const trademarkAmount_2 = trademarkAmounts_2.find(item => item.address === address)
     const trademarkAmount_3 = trademarkAmounts_3.find(item => item.address === address)
@@ -277,6 +360,16 @@ async function main() {
       transferIn: lynksAmount?.transferAmountIn,
       transferOut: lynksAmount?.transferAmountOut,
       lynks_cost: lynksBuyCostItem?.cost,
+      box_1_buy_amount: mysteryBox1Amount?.buyAmount,
+      box_1_mint_amount: mysteryBox1Amount?.mintAmount,
+      box_1_transfer_in: mysteryBox1Amount?.transferAmountIn,
+      box_1_transfer_out: mysteryBox1Amount?.transferAmountOut,
+      box_1_cost: mysteryBox1BuyCostItem?.cost,
+      box_2_buy_amount: mysteryBox2Amount?.buyAmount,
+      box_2_mint_amount: mysteryBox2Amount?.mintAmount,
+      box_2_transfer_in: mysteryBox2Amount?.transferAmountIn,
+      box_2_transfer_out: mysteryBox2Amount?.transferAmountOut,
+      box_2_cost: mystereyBox2BuyCostItem?.cost,
       ['1_buy']: trademarkAmount_1?.buyAmount,
       ['1_mint']: trademarkAmount_1?.mintAmount,
       ['1_transferIn']: trademarkAmount_1?.transferAmountIn,

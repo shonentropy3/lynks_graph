@@ -7,9 +7,9 @@
     "create": "graph create lynks --node http://localhost:8020",
     "deploy": "graph deploy lynks --ipfs http://localhost:5001 --node http://localhost:8020/",
     "remove": "graph remove lynks --node http://localhost:8020",
-    "create-local": "graph create lynks --node http://3.114.68.110:8020",
-    "deploy-local": "graph deploy lynks --ipfs http://3.114.68.110:5001--node http://3.114.68.110:8020",
-    "remove-local": "graph remove lynks --node http://3.114.68.110:8020",
+    "create-local": "graph create lynks3 --node http://3.114.68.110:8020",
+    "deploy-local": "graph deploy lynks3 --ipfs http://3.114.68.110:5001 --node http://3.114.68.110:8020",
+    "remove-local": "graph remove lynks3 --node http://3.114.68.110:8020",
     "test": "graph test"
   },
   "dependencies": {
